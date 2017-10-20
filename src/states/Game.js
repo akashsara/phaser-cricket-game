@@ -3,70 +3,86 @@ import Phaser from 'phaser'
 
 export default class extends Phaser.State {
     init () {
-        var batter, bowler, ball, stump, cursors, updateDelay, hitPlayer
+        var pitch, ball, bat, cursors, stump
     }
+
     preload () {}
 
     create () {
-        //Initialize Physics
+        //Start Physics
         game.physics.startSystem(Phaser.Physics.ARCADE);
 
-        game.add.sprite(0, 0, 'pitch');
+        //Create pitch
+        this.pitch = game.add.sprite(0, 500, 'pitch');
+        this.pitch.scale.setTo(2, 2);
+        game.physics.arcade.enable(this.pitch);
+        this.pitch.body.immovable = true;
+        this.pitch.allowGravity = false;
 
-        this.batter = game.add.sprite(375, 335, 'batter');
-        this.batter.scale.setTo(0.5, 0.5);
-        game.physics.arcade.enable(this.batter);
+        //Create bat
+        this.bat = game.add.sprite(150, 300, 'bat', 'bat00');
+        this.bat.scale.setTo(0.9, 0.9);
+        game.physics.arcade.enable(this.bat);
+        this.bat.body.immovable = true;
+        this.bat.allowGravity = false;
+        this.bat.body.collideWorldBounds = true;
+        this.bat.animations.add('hit');
 
-        this.bowler = game.add.sprite(375, 0, 'bowler');
-        this.bowler.scale.setTo(0.5, 0.5);
-        game.physics.arcade.enable(this.bowler);
 
-        this.stump = game.add.sprite(365, 375, 'stump');
-        game.physics.arcade.enable(this.stump);
+        //Create stump
+        this.stump = game.add.sprite(0, 340, 'stump');
+        this.stump.scale.setTo(0.1, 0.1);
+
+        //Create ball
+        this.createBall();
 
         this.cursors = game.input.keyboard.createCursorKeys();
 
-        this.updateDelay = 0;
-        this.hitPlayer = 0;
-        this.moveBowler();
     }
 
     update () {
-        this.batter.body.velocity.x = 0;
-        if (this.cursors.left.isDown && this.batter.x >= 320) {
-            this.batter.body.velocity.x = -150;
+        let ballHitGround = game.physics.arcade.collide(this.ball, this.pitch);
+        let ballHitBat = game.physics.arcade.collide(this.ball, this.bat);
+        let batHitGround = game.physics.arcade.collide(this.bat, this.pitch);
+
+        if(game.input.keyboard.isDown(Phaser.KeyCode.SPACEBAR)) {
+            this.ball.destroy();
+            this.createBall();
         }
-        else if (this.cursors.right.isDown && this.batter.x <= 445) {
-            this.batter.body.velocity.x = 150;
+        if(game.input.activePointer.isDown) {
+            this.bat.animations.play('hit', 10);
         }
-        if(this.updateDelay % 100 == 0) {
-            //this.moveBowler();
+
+        //Bat movement
+        this.bat.body.velocity.y = 0;
+        if (this.cursors.up.isDown || game.input.keyboard.isDown(Phaser.KeyCode.W)) {
+            this.bat.body.velocity.y = -150;
+    	}
+    	else if (this.cursors.down.isDown || game.input.keyboard.isDown(Phaser.KeyCode.S) ) {
+    		this.bat.body.velocity.y = 150;
+    	}
+        //Stop bat from going below the ground
+        if(batHitGround && this.cursors.down.isDown) {
+            this.bat.body.velocity.y = 0;
         }
-        this.updateDelay++;
+
+        if(ballHitBat) {
+            this.ball.body.velocity.x = 500;
+            this.ball.body.velocity.y = -500;
+            ballHitBat = 0;
+        }
+
     }
 
-    resetBowlerPosition() {
-        this.bowler.x = 375;
-        this.bowler.y = 0;
-    }
-
-    moveBowler() {
-        this.resetBowlerPosition();
-        this.bowler.body.moveTo(1000, 20 , 90)
-
-        setTimeout(() => {this.throwBall()}, 1200);
-    }
-
-    throwBall() {
-        let x = this.bowler.x + 15;
-        let y = this.bowler.y;
-        this.ball = game.add.sprite(x, y, 'ball');
+    createBall() {
+        //Create ball
+        let randomVelocity = -Math.floor(Math.random() * (700 - 400) + 400);
+        this.ball = game.add.sprite(1050, 300, 'ball');
+        this.ball.scale.setTo(0.3, 0.3);
         game.physics.arcade.enable(this.ball);
-        this.ball.scale.setTo(0.1, 0.1);
-        this.ball.body.velocity.y = Math.floor(Math.random() * 200);
-        this.hitPlayer = game.physics.arcade.collide(this.ball, this.batter);
-        if(this.hitPlayer) {
-            console.log("HI")
-        }
+        this.ball.body.bounce.set(1);
+        this.ball.body.gravity.y = 300;
+        this.ball.body.velocity.setTo(randomVelocity, 30);
     }
+
 }

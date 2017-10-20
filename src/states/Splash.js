@@ -10,15 +10,14 @@ export default class extends Phaser.State {
     centerGameObjects([this.loaderBg, this.loaderBar])
 
     this.load.setPreloadSprite(this.loaderBar)
-
-    this.load.image('ball', './assets/images/ball.png')
-    this.load.image('batter', './assets/images/batter.png')
-    this.load.image('bowler', './assets/images/bowler.png')
-    this.load.image('pitch', './assets/images/pitch.png')
-    this.load.image('stump', './assets/images/stump.png')
+    this.load.image('menu', './assets/images/menu.png');
+    this.load.image('pitch', './assets/images/pitch.png');
+    this.load.image('ball', './assets/images/ball.png');
+    this.load.image('stump', './assets/images/stump.png');
+    this.load.atlasJSONArray('bat', './assets/images/bat.png', './assets/images/bat.json');
   }
 
   create () {
-    this.state.start('Game')
+    this.state.start('Game');
   }
 }
