@@ -1,0 +1,36 @@
+{
+  "name": "PhaserES6Webpack",
+  "version": "1.0.0",
+  "description": "",
+  "author": "leandro cabrera <leandcabrera@gmail.com^",
+  "main": "index.js",
+  "scripts": {
+    "dev": "webpack",
+    "deploy": "webpack --config webpack.production.config.js",
+    "test": "eslint ./src/**/**.js"
+  },
+  "license": "MIT",
+  "devDependencies": {
+    "babel-core": "*",
+    "babel-eslint": "*",
+    "babel-loader": "*",
+    "babel-polyfill": "*",
+    "babel-preset-es2015": "^*",
+    "browser-sync": "*",
+    "browser-sync-webpack-plugin": "*",
+    "eslint": "*",
+    "eslint-config-standard": "*",
+    "eslint-plugin-import": "*",
+    "eslint-plugin-node": "*",
+    "eslint-plugin-promise": "*",
+    "eslint-plugin-standard": "*",
+    "expose-loader": "*",
+    "webpack": "*",
+    "ncp": "^2.0.0"
+  },
+  "dependencies": {
+    "babel-eslint": "^8.0.0",
+    "phaser-ce": "^2.8.7",
+    "webfontloader": "^1.6.28"
+  }
+}
