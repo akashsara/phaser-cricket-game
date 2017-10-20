@@ -15,6 +15,7 @@ export default class extends Phaser.State {
     this.load.image('ball', './assets/images/ball.png');
     this.load.image('stump', './assets/images/stump.png');
     this.load.atlasJSONArray('bat', './assets/images/bat.png', './assets/images/bat.json');
+    this.load.physics("physics", "./assets/images/physicsData.json");
   }
 
   create () {

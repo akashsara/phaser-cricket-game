@@ -3,86 +3,106 @@ import Phaser from 'phaser'
 
 export default class extends Phaser.State {
     init () {
-        var pitch, ball, bat, cursors, stump
+        var pitch, ball, bat, cursors, stump, toggleBodyChange;
+        /*var batGroup, stumpGroup, pitchGroup
+        var batCollision, stumpCollision, pitchCollision;*/
     }
 
     preload () {}
-
     create () {
         //Start Physics
-        game.physics.startSystem(Phaser.Physics.ARCADE);
+        game.physics.startSystem(Phaser.Physics.P2JS);
+        game.physics.p2.gravity.y = 100;
+        game.physics.p2.restitution = 0.8;
+        game.physics.p2.setImpactEvents(true);
 
         //Create pitch
-        this.pitch = game.add.sprite(0, 500, 'pitch');
-        this.pitch.scale.setTo(2, 2);
-        game.physics.arcade.enable(this.pitch);
-        this.pitch.body.immovable = true;
-        this.pitch.allowGravity = false;
+        this.pitch = game.add.sprite(0, 550, 'pitch');
+        this.pitch.scale.setTo(3, 2);
+        //pitch physics
+        game.physics.p2.enable(this.pitch);
+        this.pitch.body.kinematic = true;
 
         //Create bat
-        this.bat = game.add.sprite(150, 300, 'bat', 'bat00');
-        this.bat.scale.setTo(0.9, 0.9);
-        game.physics.arcade.enable(this.bat);
-        this.bat.body.immovable = true;
-        this.bat.allowGravity = false;
+        this.bat = game.add.sprite(150, 370, 'bat', 'bat00.png');
+        //bat physics
+        game.physics.p2.enable(this.bat, true);
+        this.bat.body.clearShapes();
+        this.bat.body.kinematic = true;
         this.bat.body.collideWorldBounds = true;
         this.bat.animations.add('hit');
 
-
         //Create stump
-        this.stump = game.add.sprite(0, 340, 'stump');
-        this.stump.scale.setTo(0.1, 0.1);
+        this.stump = game.add.sprite(70, 400, 'stump');
+        //stump physics
+        game.physics.p2.enable(this.stump);
+        this.stump.body.kinematic = true;
+        this.stump.body.clearShapes();
+        this.stump.body.loadPolygon("physics", "stump");
 
         //Create ball
         this.createBall();
 
+        //initialize cursors, variable to test if frame change required
         this.cursors = game.input.keyboard.createCursorKeys();
+        this.toggleBodyChange = 0;
 
+        /*//Collision groups
+        this.batCollision = game.physics.p2.createCollisionGroup();
+        this.stumpCollision = game.physics.p2.createCollisionGroup();
+        this.pitchCollision = game.physics.p2.createCollisionGroup();
+        game.physics.p2.updateBoundsCollisionGroup();
+        this.batGroup.body.setCollisionGroup(this.batCollision);
+        this.pitchGroup.body.setCollisionGroup(this.pitchCollision);
+        this.stumpGroup.body.setCollisionGroup(this.stumpCollision);*/
     }
 
     update () {
-        let ballHitGround = game.physics.arcade.collide(this.ball, this.pitch);
-        let ballHitBat = game.physics.arcade.collide(this.ball, this.bat);
-        let batHitGround = game.physics.arcade.collide(this.bat, this.pitch);
+        /*
+        let ballHitGround = game.physics.p2.collide(this.ball, this.pitch);
+        let ballHitBat = game.physics.p2.collide(this.ball, this.bat);
+        let batHitGround = game.physics.p2.collide(this.bat, this.pitch);
+        */
+
+        if(this.toggleBodyChange) {
+            this.bat.body.clearShapes();
+            this.toggleBodyChange = 0;
+        }
 
         if(game.input.keyboard.isDown(Phaser.KeyCode.SPACEBAR)) {
             this.ball.destroy();
             this.createBall();
         }
         if(game.input.activePointer.isDown) {
-            this.bat.animations.play('hit', 10);
-        }
-
-        //Bat movement
-        this.bat.body.velocity.y = 0;
-        if (this.cursors.up.isDown || game.input.keyboard.isDown(Phaser.KeyCode.W)) {
-            this.bat.body.velocity.y = -150;
-    	}
-    	else if (this.cursors.down.isDown || game.input.keyboard.isDown(Phaser.KeyCode.S) ) {
-    		this.bat.body.velocity.y = 150;
-    	}
-        //Stop bat from going below the ground
-        if(batHitGround && this.cursors.down.isDown) {
-            this.bat.body.velocity.y = 0;
-        }
+            this.bat.body.clearShapes();
+            this.bat.body.loadPolygon("physics", "bat01");
+            this.bat.animations.play('hit', 30);
+            this.bat.animations.currentAnim.speed = 5;
+            this.toggleBodyChange = 1;
+        }/*
 
         if(ballHitBat) {
-            this.ball.body.velocity.x = 500;
-            this.ball.body.velocity.y = -500;
-            ballHitBat = 0;
-        }
+        this.ball.body.velocity.x = 500;
+        this.ball.body.velocity.y = -500;
+        ballHitBat = 0;
+    }*/
 
-    }
+}
 
-    createBall() {
-        //Create ball
-        let randomVelocity = -Math.floor(Math.random() * (700 - 400) + 400);
-        this.ball = game.add.sprite(1050, 300, 'ball');
-        this.ball.scale.setTo(0.3, 0.3);
-        game.physics.arcade.enable(this.ball);
-        this.ball.body.bounce.set(1);
-        this.ball.body.gravity.y = 300;
-        this.ball.body.velocity.setTo(randomVelocity, 30);
-    }
+createBall() {
+    //Create ball
+    let randomVelocity = -Math.floor(Math.random() * (700 - 400) + 400);
+    this.ball = game.add.sprite(1050, 300, 'ball');
+    this.ball.scale.setTo(0.3, 0.3);
+    game.physics.p2.enable(this.ball);
+    this.ball.body.collideWorldBounds = true;
+    //this.ball.body.collides(this.stumpCollision, this.gameOver);
+    this.ball.body.velocity.x = randomVelocity;
+    this.ball.body.velocity.y = 200;
+}
+
+gameOver() {
+    console.log("Game Over")
+}
 
 }
