@@ -11,14 +11,15 @@ export default class extends Phaser.State {
 
     this.load.setPreloadSprite(this.loaderBar)
     this.load.image('menu', './assets/images/menu.png');
+    this.load.image('gameOver', './assets/images/game_over.png');
     this.load.image('pitch', './assets/images/pitch.png');
     this.load.image('ball', './assets/images/ball.png');
     this.load.image('stump', './assets/images/stump.png');
-    this.load.atlasJSONArray('bat', './assets/images/bat.png', './assets/images/bat.json');
+    this.load.image('bat', './assets/images/bat.png');
     this.load.physics("physics", "./assets/images/physicsData.json");
   }
 
   create () {
-    this.state.start('Game');
+    this.state.start('Menu');
   }
 }
