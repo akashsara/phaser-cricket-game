@@ -103,7 +103,7 @@ export default class extends Phaser.State {
 
     createBall() {
         // create ball with random velocity
-        let randomVelocityX = -Math.round(Math.random() * (450) + 400);
+        let randomVelocityX = -Math.round(Math.random() * (300) + 400);
         let randomVelocityY = Math.round(Math.random() * (100) + 150);
         this.ball = this.ballGroup.create(950, 300, 'ball');
         this.ball.scale.setTo(0.3, 0.3);
