@@ -4,8 +4,8 @@ import Phaser from 'phaser'
 export default class extends Phaser.State {
     init () {
         var pitch, ball, bat, cursors, stump, toggleBodyChange;
-        /*var batGroup, stumpGroup, pitchGroup
-        var batCollision, stumpCollision, pitchCollision;*/
+        var batGroup, stumpGroup, pitchGroup, ballGroup;
+        var batCollisionGroup, stumpCollisionGroup, pitchCollisionGroup, ballCollisionGroup;
     }
 
     preload () {}
@@ -15,60 +15,71 @@ export default class extends Phaser.State {
         game.physics.p2.gravity.y = 100;
         game.physics.p2.restitution = 0.8;
         game.physics.p2.setImpactEvents(true);
+        game.world.setBounds(0, 0, 1000, 600);
 
-        //Create pitch
-        this.pitch = game.add.sprite(0, 550, 'pitch');
+        //create groups
+        this.pitchGroup = game.add.group();
+        this.batGroup = game.add.group();
+        this.ballGroup = game.add.group();
+        this.stumpGroup = game.add.group();
+
+        //create collision groups
+        this.pitchCollisionGroup = game.physics.p2.createCollisionGroup();
+        this.batCollisionGroup = game.physics.p2.createCollisionGroup();
+        this.ballCollisionGroup = game.physics.p2.createCollisionGroup();
+        this.stumpCollisionGroup = game.physics.p2.createCollisionGroup();
+
+        //create pitch
+        this.pitch = this.pitchGroup.create(0, 550, 'pitch');
         this.pitch.scale.setTo(3, 2);
         //pitch physics
         game.physics.p2.enable(this.pitch);
         this.pitch.body.kinematic = true;
+        //pitch Collision
+        this.pitch.body.setCollisionGroup(this.pitchCollisionGroup);
+        this.pitch.body.collides(this.ballCollisionGroup);
 
-        //Create bat
-        this.bat = game.add.sprite(150, 370, 'bat', 'bat00.png');
+        //create bat
+        this.bat = this.batGroup.create(150, 370, 'bat', 'bat00.png');
         //bat physics
         game.physics.p2.enable(this.bat, true);
-        this.bat.body.clearShapes();
         this.bat.body.kinematic = true;
-        this.bat.body.collideWorldBounds = true;
+        //vat animations & polygon body
+        //this.bat.body.clearShapes();
         this.bat.animations.add('hit');
-
-        //Create stump
-        this.stump = game.add.sprite(70, 400, 'stump');
-        //stump physics
-        game.physics.p2.enable(this.stump);
-        this.stump.body.kinematic = true;
-        this.stump.body.clearShapes();
-        this.stump.body.loadPolygon("physics", "stump");
+        //bat Collision
+        this.bat.body.setCollisionGroup(this.batCollisionGroup);
+        this.bat.body.collides(this.ballCollisionGroup, this.collideWithBat, this);
 
         //Create ball
         this.createBall();
+
+        //create stump
+        this.stump = this.stumpGroup.create(70, 400, 'stump');
+        //stump physics
+        game.physics.p2.enable(this.stump);
+        this.stump.body.kinematic = true;
+        //stump polygon body
+        this.stump.body.clearShapes();
+        this.stump.body.loadPolygon("physics", "stump");
+        //stump collision
+        this.stump.body.setCollisionGroup(this.stumpCollisionGroup);
+        this.stump.body.collides(this.ballCollisionGroup, this.collideWithStump, this);
 
         //initialize cursors, variable to test if frame change required
         this.cursors = game.input.keyboard.createCursorKeys();
         this.toggleBodyChange = 0;
 
-        /*//Collision groups
-        this.batCollision = game.physics.p2.createCollisionGroup();
-        this.stumpCollision = game.physics.p2.createCollisionGroup();
-        this.pitchCollision = game.physics.p2.createCollisionGroup();
+        //Updated bounds
         game.physics.p2.updateBoundsCollisionGroup();
-        this.batGroup.body.setCollisionGroup(this.batCollision);
-        this.pitchGroup.body.setCollisionGroup(this.pitchCollision);
-        this.stumpGroup.body.setCollisionGroup(this.stumpCollision);*/
+
     }
 
     update () {
-        /*
-        let ballHitGround = game.physics.p2.collide(this.ball, this.pitch);
-        let ballHitBat = game.physics.p2.collide(this.ball, this.bat);
-        let batHitGround = game.physics.p2.collide(this.bat, this.pitch);
-        */
-
         if(this.toggleBodyChange) {
             this.bat.body.clearShapes();
             this.toggleBodyChange = 0;
         }
-
         if(game.input.keyboard.isDown(Phaser.KeyCode.SPACEBAR)) {
             this.ball.destroy();
             this.createBall();
@@ -79,30 +90,37 @@ export default class extends Phaser.State {
             this.bat.animations.play('hit', 30);
             this.bat.animations.currentAnim.speed = 5;
             this.toggleBodyChange = 1;
-        }/*
+        }
+    }
 
-        if(ballHitBat) {
-        this.ball.body.velocity.x = 500;
-        this.ball.body.velocity.y = -500;
-        ballHitBat = 0;
-    }*/
+    createBall() {
+        //create ball
+        let randomVelocityX = -Math.round(Math.random() * (200) + 400);
+        let randomVelocityY = Math.round(Math.random() * (100) + 150);
+        console.log(randomVelocityX, randomVelocityY);
+        this.ball = this.ballGroup.create(950, 300, 'ball');
+        this.ball.scale.setTo(0.3, 0.3);
+        game.physics.p2.enable(this.ball);
+        this.ball.body.velocity.x = randomVelocityX;
+        this.ball.body.velocity.y = randomVelocityY;
+        //ball Collision
+        this.ball.body.collideWorldBounds = false;
+        this.ball.body.setCollisionGroup(this.ballCollisionGroup);
+        this.ball.body.collides([this.batCollisionGroup, this.stumpCollisionGroup, this.pitchCollisionGroup]);
+    }
 
-}
+    gameOver() {
+        console.log("Game Over")
+    }
 
-createBall() {
-    //Create ball
-    let randomVelocity = -Math.floor(Math.random() * (700 - 400) + 400);
-    this.ball = game.add.sprite(1050, 300, 'ball');
-    this.ball.scale.setTo(0.3, 0.3);
-    game.physics.p2.enable(this.ball);
-    this.ball.body.collideWorldBounds = true;
-    //this.ball.body.collides(this.stumpCollision, this.gameOver);
-    this.ball.body.velocity.x = randomVelocity;
-    this.ball.body.velocity.y = 200;
-}
+    collideWithStump() {
+        this.ball.destroy();
+        this.gameOver();
+    }
 
-gameOver() {
-    console.log("Game Over")
-}
+    collideWithBat() {
+        let returnSpeed = Math.round(Math.random() * (1000 - 500) + 500);
+        this.ball.body.reverse(1000);
+    }
 
 }
