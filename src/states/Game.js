@@ -43,7 +43,7 @@ export default class extends Phaser.State {
         // create bat
         this.bat = this.batGroup.create(150, 370, 'bat');
         // bat physics
-        game.physics.p2.enable(this.bat, true);
+        game.physics.p2.enable(this.bat);
         this.bat.body.kinematic = true;
         // bat shape
         this.bat.body.clearShapes();
